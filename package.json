@@ -1,13 +1,13 @@
 {
-  "name": "name-here",
-  "description": "description-here",
+  "name": "grievance-portal",
+  "description": "grieivance portal for aud",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
     "start:local": "npm run build:sam && npm run run:sam",
-    "build:sam": "sam build && cp .env .aws-sam/build/build-name-here",
-    "run:sam": "set NODE_ENV=localhost && sam build --use-container --container-env-var-file ./env.json && cp .env .aws-sam/build/build-name-here && sam local start-api --region us-east-1"
+    "build:sam": "sam build && cp .env .aws-sam/build/GrievanceFunction",
+    "run:sam": "set NODE_ENV=localhost && sam build --use-container && sam local start-api --region us-east-2 --env-vars .env.dev"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.613.0",

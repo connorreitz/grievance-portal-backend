@@ -1,17 +1,17 @@
 import middy from "@middy/core";
 import { APIGatewayEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 import { addToTableNumber, PartitionKeys } from "../services/dynamo";
-import createHttpError from "http-errors";
-import { sendTextMessageToSubscribers } from "../services/sns";
+import createError from "http-errors";
+import { sendMessageToSubscribers } from "../services/sns";
 import { REQUEST_BODY_SCHEMA } from "../model/bodyModel";
 
 async function publishGrievance(event: APIGatewayEvent, context: Context): Promise<APIGatewayProxyResult> {
-    const tableName = 'grievance-coutner'
+    const tableName = process.env.TABLE_NAME ?? 'default'
     const attributeName = 'audrey-counter'
     
     const results = await Promise.all([
-        addToTableNumber(tableName, attributeName, PartitionKeys.ID, 1),
-        sendTextMessageToSubscribers(buildGrievanceMessage(event))
+        addToTableNumber(tableName, attributeName, PartitionKeys.ID, '1', 1),
+        sendMessageToSubscribers(buildGrievanceMessage(event))
     ])
 
     return {
@@ -24,10 +24,15 @@ async function publishGrievance(event: APIGatewayEvent, context: Context): Promi
 }
 
 function buildGrievanceMessage(event: APIGatewayEvent) {
-    const bodyResult = REQUEST_BODY_SCHEMA.safeParse(event.body)
+    console.log('building message')
+    if (!event.body) {
+        throw createError(500, 'no event body')
+    }
+    const body = JSON.parse(event.body)
+    const bodyResult = REQUEST_BODY_SCHEMA.safeParse(body)
 
     if (!bodyResult.success) {
-        throw createHttpError(400, 'Bad request body', bodyResult.error.errors)
+        throw createError(400, 'Bad request body')
     }
 
     const data = bodyResult.data

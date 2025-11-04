@@ -7,5 +7,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export const handler = middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
 .use(httpCors({origin: '*'}))
-.use(httpErrorHandler())
+.use(httpErrorHandler({
+    logger: (e:any) => console.error(e?.name, e?.statusCode, e?.message),
+    fallbackMessage: 'Something went wrong'
+  }))
 .handler(httpRouterHandler(routes))

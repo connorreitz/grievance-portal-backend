@@ -6,28 +6,64 @@ Transform:
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Parameters:
+  TableName:
+    Type: String
+    Description: Name of the existing DynamoDB table (e.g., Orders)
+  TableArn:
+    Type: String
+    Description: ARN of the existing DynamoDB table
+  SnsTopicArn:
+    Type: String
+    Description: ARN of the existing SNS topic (e.g., arn:aws:sns:us-east-1:123456789012:events)
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
 
   # not sure if the name here really matters
-  lambdaFunction:
+  GrievanceFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/index.handler
       Runtime: nodejs22.x
       Architectures:
       - x86_64
-      MemorySize: 128
+      MemorySize: 256
       Timeout: 100
       Description: description
       Events:
-        Example:
+        GetCurrentGrievances:
           Type: Api
           Properties:
-            Path: /path/to/endpoint
+            Path: /count
             Method: GET
+        Publish:
+          Type: Api
+          Properties:
+            Path: /publish
+            Method: POST
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                # tailor to your access pattern
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource:
+                - !Ref TableArn
+            - Effect: Allow
+              Action: sns:Publish
+              Resource: !Ref SnsTopicArn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          TABLE_ARN: !Ref TableArn
+          SNS_TOPIC_ARN: !Ref SnsTopicArn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -45,3 +81,9 @@ Globals:
   Function:
     LoggingConfig:
       LogFormat: JSON
+  Api:
+    Cors:
+        AllowOrigin: "'https://master.d3g6eijrr8jyz3.amplifyapp.com'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
+        AllowCredentials: true

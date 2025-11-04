@@ -17,11 +17,12 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
-stack_name = "test"
-s3_prefix = "test"
-region = "us-east-1"
+stack_name = "grievance-portal"
+s3_prefix = "grievance-portal"
+region = "us-east-2"
 image_repositories = []
 disable_rollback = true
+parameter_overrides = "SnsTopicArn=arn:aws:sns:us-east-2:905418403746:grievance-portal TableName=grievance-counter TableArn=arn:aws:dynamodb:us-east-2:905418403746:table/grievance-counter"
 
 [default.package.parameters]
 resolve_s3 = true

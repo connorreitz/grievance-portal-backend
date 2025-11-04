@@ -1,29 +1,30 @@
 import AWS from "aws-sdk";
-import createHttpError from "http-errors";
+import createError from "http-errors";
+import 'dotenv/config'
 
 const snsClient = new AWS.SNS();
 
 // Publishes the provided message to the configured SNS topic so all SMS subscribers receive it.
-export const sendTextMessageToSubscribers = async (message: string): Promise<string> => {
-    if (!message.trim()) {
-        throw createHttpError(400, "SNS message must be a non-empty string.");
-    }
+export const sendMessageToSubscribers = async (message: string): Promise<string> => {
+    console.log('enter sns function')
 
-    const topicArn = process.env.SNS_TOPIC_ARN;
-
+    const topicArn = process.env.SNS_TOPIC_ARN
+    console.log('check topic arn')
     if (!topicArn) {
-        throw createHttpError(500, "SNS_TOPIC_ARN environment variable is not set.");
+        throw createError(500, "SNS_TOPIC_ARN environment variable is not set.");
     }
 
+    console.log(`attempt publish: ${message}`)
     const result = await snsClient.publish({
         TopicArn: topicArn,
         Message: message
     }).promise();
+    console.log('complete publish')
 
     const messageId = result.MessageId;
 
     if (!messageId) {
-        throw createHttpError(500, "SNS publish operation did not return a MessageId.");
+        throw createError(500, "SNS publish operation did not return a MessageId.");
     }
 
     return messageId;
