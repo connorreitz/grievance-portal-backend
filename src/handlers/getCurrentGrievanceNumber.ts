@@ -17,7 +17,7 @@ async function getAmountFiled(): Promise<APIGatewayProxyResult> {
 
     return {
         statusCode: 200,
-        body: `{amountFiled: ${accessResult.data["audrey-counter"]}}`
+        body: `{"amountFiled": ${accessResult.data["audrey-counter"]}}`
     }
 
 }
